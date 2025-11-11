@@ -42,7 +42,7 @@
 
                 try {
                     // 1. Register SW
-                    const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+                    const registration = await navigator.serviceWorker.register('firebase-messaging-sw.js');
                     console.log('SW registered:', registration.scope);
 
                     // 2. CRITICAL: Wait for SW to be active
