@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCM Test - Your Config</title>
+</head>
+
+<body>
+    <h1>Click to Get FCM Token</h1>
+    <button id="getToken">Get Token</button>
+    <div id="output"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAhjBF4Vs0on8oF-lfY8OOkYndjRPdsxdA",
+            authDomain: "push-6b014.firebaseapp.com",
+            projectId: "push-6b014",
+            storageBucket: "push-6b014.firebasestorage.app",
+            messagingSenderId: "683075307853",
+            appId: "1:683075307853:web:fe59eba0b8bd5cdcd38f04",
+            measurementId: "G-1XRKRTC8RH"
+        };
+
+        // Wait for DOM + Firebase
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (typeof firebase === 'undefined') {
+                document.getElementById('output').innerHTML = '<p style="color:red;">Firebase SDK failed to load</p>';
+                return;
+            }
+
+            firebase.initializeApp(firebaseConfig);
+            const messaging = firebase.messaging();
+
+            document.getElementById('getToken').addEventListener('click', async () => {
+                const output = document.getElementById('output');
+                output.innerHTML = '<p>Registering SW...</p>';
+
+                try {
+                    // 1. Register SW
+                    const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+                    console.log('SW registered:', registration.scope);
+
+                    // 2. CRITICAL: Wait for SW to be active
+                    await navigator.serviceWorker.ready;
+                    console.log('SW is ready');
+
+                    // 3. Now safe to use Notification
+                    if (!('Notification' in window)) {
+                        throw new Error('Browser does not support Notification API');
+                    }
+
+                    const permission = await Notification.requestPermission();
+                    if (permission !== 'granted') {
+                        throw new Error('Notification permission denied');
+                    }
+
+                    // 4. Get token
+                    const token = await messaging.getToken({
+                        vapidKey: 'BPpt3Xx-hyoxHDX-ILhND3C7e7klYxbTaPxl8vjK_ucKpRrzHS5XUIstPfl_7f1xk-WG3tToxJWO5sPTtUKpG20'
+                    });
+
+                    output.innerHTML = `<p style="color:green;">Token:<br><code>${token}</code></p>`;
+
+                } catch (err) {
+                    console.error('Token error:', err);
+                    output.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
